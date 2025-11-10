@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Visualização PERT/CPM</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
+        #cy {
+            width: 95%;
+            height: 80vh; 
+            display: block;
+            margin: 20px auto;
+            background-color: #fff;
+            border: 1px solid #ccc;
+        }
+        #info { padding: 10px; text-align: center; }
+        .error { color: red; font-weight: bold; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.23.0/cytoscape.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/cytoscape-dagre@2.5.0/cytoscape-dagre.min.js"></script>
+</head>
+<body>
+    <div id="info">
+        <h1>Diagrama PERT/CPM</h1>
+        <p>Caminho Crítico (Folga = 0) destacado em vermelho. Duração Total: <span id="duracao-total">...</span></p>
+        <p id="status" class="error">Carregando...</p>
+    </div>
+    <div id="cy"></div>
+
+    <script>
+        // Função para carregar e inicializar o Cytoscape
+        function loadGraph(data) {
+            const statusElement = $('#status');
+            
+            // 1. Mapeia os dados JSON para o formato de elementos
+            let elements = [];
+            data.nodes.forEach(node => {
+                const d = node.data;
+                const folga = d.folga === 0 ? 'CRÍTICA' : d.folga;
+                
+                const label_text = `ID: ${d.id}\nES: ${d.es} | EF: ${d.ef}\nLS: ${d.ls} | LF: ${d.lf}\nFolga: ${folga}`;
+                
+                elements.push({
+                    data: {
+                        ...d,
+                        label: label_text,
+                    }
+                });
+            });
+
+            data.edges.forEach(edge => {
+                elements.push(edge);
+            });
+
+
+            // 2. Inicializa o Cytoscape
+            var cy = window.cy = cytoscape({
+                container: document.getElementById('cy'),
+                elements: elements,
+                
+                // Estilo (CSS do Grafo)
+                style: [
+                    {
+                        selector: 'node',
+                        style: {
+                            'label': 'data(label)',
+                            'text-wrap': 'wrap',
+                            'background-color': '#ccc',
+                            'border-width': 2,
+                            'border-color': 'black',
+                            'padding': '10px',
+                            'shape': 'round-rectangle',
+                            'width': '180px',
+                            'height': '110px',
+                            'text-valign': 'center',
+                            'color': 'black',
+                        }
+                    },
+                    {
+                        selector: 'edge',
+                        style: {
+                            'curve-style': 'bezier',
+                            'target-arrow-shape': 'triangle',
+                            'line-color': '#aaa',
+                            'width': 1,
+                        }
+                    },
+                    // Estilo para o CAMINHO CRÍTICO (Nós e Arestas)
+                    {
+                        selector: '[critica = "true"]',
+                        style: {
+                            'background-color': '#FFCCCC',
+                            'border-color': 'red',
+                            'color': 'red',
+                            'line-color': 'red',
+                            'width': 3,
+                        }
+                    }
+                ]
+                
+                // Nota: O layout será aplicado após o 'ready' para garantir que o Dagre esteja carregado.
+            });
+            
+            // 3. Aplica o Layout Atrasado (Solução para o erro de renderização)
+            // Usa 'cy.ready' para garantir que as extensões (como Dagre) tenham sido carregadas.
+            cy.ready(function() {
+                var layout = cy.layout({
+                    name: 'dagre', 
+                    rankDir: 'LR', // Esquerda para a direita
+                    fit: true,
+                    padding: 30
+                });
+                layout.run();
+                statusElement.removeClass('error').text("Grafo renderizado com sucesso! (Duração Total: " + data.duracao_total + ")");
+            });
+        }
+
+        // --- Lógica de Carregamento do Arquivo JSON ---
+        $(document).ready(function() {
+            const statusElement = $('#status');
+
+            // Tenta carregar o JSON (usa AJAX detalhado para debug)
+            $.ajax({
+                url: "grafo.json",
+                dataType: "json",
+                success: function(data) {
+                    $('#duracao-total').text(data.duracao_total);
+                    loadGraph(data);
+                },
+                error: function(jqxhr, textStatus, error) {
+                    let errorMessage = "Erro de requisição. Verifique o console (F12).";
+                    if (jqxhr.status === 404) {
+                        errorMessage = "ERRO 404: Arquivo 'grafo.json' não encontrado. Verifique a pasta.";
+                    } else if (jqxhr.status === 0) {
+                        errorMessage = "ERRO DE ACESSO: O servidor parou ou o navegador bloqueou a leitura. Recarregue a página (http://...)";
+                    } else if (textStatus === 'parsererror') {
+                        errorMessage = "ERRO DE SINTAXE NO JSON. O arquivo 'grafo.json' não é válido.";
+                    }
+                    statusElement.addClass('error').text(errorMessage);
+                    console.error("AJAX Error Details:", textStatus, error, jqxhr);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -269,10 +269,92 @@ void gerarArquivoDOT(const map<string, Atividade>& atividades, const vector<stri
     cout << "\nArquivo DOT '" << nome_arquivo << "' gerado com sucesso!" << endl;
 }
 
-// =========================================================
-// FUNÇÃO MAIN
-// =========================================================
+void gerarArquivoJSON(const map<string, Atividade>& atividades, const vector<string>& ordem_topologica, const string& nome_arquivo) {
+    ofstream arquivo(nome_arquivo);
+    if (!arquivo.is_open()) {
+        cerr << "ERRO: Não foi possível abrir o arquivo JSON para escrita." << endl;
+        return;
+    }
 
+    arquivo << "{" << endl;
+    arquivo << "  \"projeto\": \"PERT_CPM_Grafo\"," << endl;
+    
+    // Calcula a duração total do projeto (maior LF das atividades finais)
+    int duracao_total = 0;
+    if (!ordem_topologica.empty()) {
+        for (const string& id : ordem_topologica) {
+            if (atividades.at(id).sucessores.empty()) {
+                duracao_total = max(duracao_total, atividades.at(id).LF);
+            }
+        }
+    }
+    arquivo << "  \"duracao_total\": " << duracao_total << "," << endl; 
+    
+    arquivo << "  \"nodes\": [" << endl;
+
+    // --- 1. Geração dos Nós (Nodes) ---
+    for (size_t i = 0; i < ordem_topologica.size(); ++i) {
+        const string& id = ordem_topologica[i];
+        const Atividade& ativ = atividades.at(id);
+
+        arquivo << "    {" << endl;
+        arquivo << "      \"data\": {" << endl;
+        arquivo << "        \"id\": \"" << ativ.id << "\"," << endl;
+        arquivo << "        \"label\": \"" << ativ.id << "\"," << endl;
+        arquivo << "        \"duracao\": " << ativ.duracao << "," << endl;
+        arquivo << "        \"es\": " << ativ.ES << "," << endl;
+        arquivo << "        \"ef\": " << ativ.EF << "," << endl;
+        arquivo << "        \"ls\": " << ativ.LS << "," << endl;
+        arquivo << "        \"lf\": " << ativ.LF << "," << endl;
+        arquivo << "        \"folga\": " << ativ.folga << "," << endl;
+        arquivo << "        \"critica\": " << (ativ.folga == 0 ? "true" : "false") << "" << endl;
+        arquivo << "      }" << endl;
+        arquivo << "    }";
+        if (i < ordem_topologica.size() - 1) {
+            arquivo << ",";
+        }
+        arquivo << endl;
+    }
+    arquivo << "  ]," << endl;
+
+    // --- 2. Geração das Arestas (Edges) ---
+    arquivo << "  \"edges\": [" << endl;
+    bool primeira_aresta = true;
+
+    for (const string& id : ordem_topologica) {
+        const Atividade& ativ = atividades.at(id);
+        for (const string& sucessor_id : ativ.sucessores) {
+            
+            if (!primeira_aresta) {
+                arquivo << "," << endl;
+            }
+            
+            bool is_critical_edge = (ativ.folga == 0 && atividades.at(sucessor_id).folga == 0 && ativ.EF == atividades.at(sucessor_id).ES);
+
+            arquivo << "    {" << endl;
+            arquivo << "      \"data\": {" << endl;
+            arquivo << "        \"source\": \"" << ativ.id << "\"," << endl;
+            arquivo << "        \"target\": \"" << sucessor_id << "\"," << endl;
+            arquivo << "        \"critica\": " << (is_critical_edge ? "true" : "false") << "" << endl;
+            arquivo << "      }" << endl;
+            arquivo << "    }";
+
+            primeira_aresta = false;
+        }
+    }
+    
+    if (!primeira_aresta) {
+        arquivo << endl;
+    }
+    arquivo << "  ]" << endl;
+    arquivo << "}" << endl;
+
+    arquivo.close();
+    cout << "\nArquivo JSON '" << nome_arquivo << "' gerado com sucesso. Use o index.html para visualizar." << endl;
+}
+
+
+// FUNÇÃO MAIN (Adaptada para gerar o arquivo JSON)
 int main() {
     // Tabela de Atividades, Duração e Precedentes:
     vector<tuple<string, int, string>> dados_projeto = {
@@ -293,23 +375,20 @@ int main() {
     };
 
     map<string, Atividade> atividades;
-    string nome_arquivo_dot = "pert_cpm_grafo.dot";
+    string nome_arquivo_json = "grafo.json"; // Nome do arquivo conforme o requisito
 
-    // 1. Construir o Grafo
     construirGrafo(atividades, dados_projeto);
-    cout << "Grafo de Atividades Construido." << endl;
 
-    // 2. Calcular PERT/CPM (Compatível com G++ 6.3)
     bool calculo_ok;
     vector<string> ordem_topologica = calcularPERT_CPM_Legacy(atividades, calculo_ok);
 
     if (calculo_ok) {
-        // 3. Exibir Resultados (Tabela)
         exibirResultado(atividades, ordem_topologica);
         
-        // 4. Gerar o arquivo DOT (para o display gráfico)
-        gerarArquivoDOT(atividades, ordem_topologica, nome_arquivo_dot);
+        // Geração do arquivo JSON para o display gráfico
+        gerarArquivoJSON(atividades, ordem_topologica, nome_arquivo_json);
     }
 
     return 0;
 }
+// [Fim do código C++]

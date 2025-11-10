@@ -1,0 +1,302 @@
+{
+  "projeto": "PERT_CPM_Grafo",
+  "duracao_total": 44,
+  "nodes": [
+    {
+      "data": {
+        "id": "A",
+        "label": "A",
+        "duracao": 2,
+        "es": 0,
+        "ef": 2,
+        "ls": 0,
+        "lf": 2,
+        "folga": 0,
+        "critica": true
+      }
+    },
+    {
+      "data": {
+        "id": "N",
+        "label": "N",
+        "duracao": 4,
+        "es": 2,
+        "ef": 6,
+        "ls": 2,
+        "lf": 6,
+        "folga": 0,
+        "critica": true
+      }
+    },
+    {
+      "data": {
+        "id": "C",
+        "label": "C",
+        "duracao": 10,
+        "es": 6,
+        "ef": 16,
+        "ls": 6,
+        "lf": 16,
+        "folga": 0,
+        "critica": true
+      }
+    },
+    {
+      "data": {
+        "id": "I",
+        "label": "I",
+        "duracao": 7,
+        "es": 16,
+        "ef": 23,
+        "ls": 18,
+        "lf": 25,
+        "folga": 2,
+        "critica": false
+      }
+    },
+    {
+      "data": {
+        "id": "E",
+        "label": "E",
+        "duracao": 4,
+        "es": 16,
+        "ef": 20,
+        "ls": 16,
+        "lf": 20,
+        "folga": 0,
+        "critica": true
+      }
+    },
+    {
+      "data": {
+        "id": "F",
+        "label": "F",
+        "duracao": 5,
+        "es": 20,
+        "ef": 25,
+        "ls": 20,
+        "lf": 25,
+        "folga": 0,
+        "critica": true
+      }
+    },
+    {
+      "data": {
+        "id": "J",
+        "label": "J",
+        "duracao": 8,
+        "es": 25,
+        "ef": 33,
+        "ls": 25,
+        "lf": 33,
+        "folga": 0,
+        "critica": true
+      }
+    },
+    {
+      "data": {
+        "id": "L",
+        "label": "L",
+        "duracao": 5,
+        "es": 33,
+        "ef": 38,
+        "ls": 33,
+        "lf": 38,
+        "folga": 0,
+        "critica": true
+      }
+    },
+    {
+      "data": {
+        "id": "K",
+        "label": "K",
+        "duracao": 4,
+        "es": 33,
+        "ef": 37,
+        "ls": 34,
+        "lf": 38,
+        "folga": 1,
+        "critica": false
+      }
+    },
+    {
+      "data": {
+        "id": "B",
+        "label": "B",
+        "duracao": 6,
+        "es": 38,
+        "ef": 44,
+        "ls": 38,
+        "lf": 44,
+        "folga": 0,
+        "critica": true
+      }
+    },
+    {
+      "data": {
+        "id": "D",
+        "label": "D",
+        "duracao": 6,
+        "es": 16,
+        "ef": 22,
+        "ls": 20,
+        "lf": 26,
+        "folga": 4,
+        "critica": false
+      }
+    },
+    {
+      "data": {
+        "id": "G",
+        "label": "G",
+        "duracao": 7,
+        "es": 22,
+        "ef": 29,
+        "ls": 26,
+        "lf": 33,
+        "folga": 4,
+        "critica": false
+      }
+    },
+    {
+      "data": {
+        "id": "H",
+        "label": "H",
+        "duracao": 9,
+        "es": 29,
+        "ef": 38,
+        "ls": 33,
+        "lf": 42,
+        "folga": 4,
+        "critica": false
+      }
+    },
+    {
+      "data": {
+        "id": "M",
+        "label": "M",
+        "duracao": 2,
+        "es": 38,
+        "ef": 40,
+        "ls": 42,
+        "lf": 44,
+        "folga": 4,
+        "critica": false
+      }
+    }
+  ],
+  "edges": [
+    {
+      "data": {
+        "source": "A",
+        "target": "N",
+        "critica": true
+      }
+    },
+    {
+      "data": {
+        "source": "N",
+        "target": "C",
+        "critica": true
+      }
+    },
+    {
+      "data": {
+        "source": "C",
+        "target": "D",
+        "critica": false
+      }
+    },
+    {
+      "data": {
+        "source": "C",
+        "target": "E",
+        "critica": true
+      }
+    },
+    {
+      "data": {
+        "source": "C",
+        "target": "I",
+        "critica": false
+      }
+    },
+    {
+      "data": {
+        "source": "I",
+        "target": "J",
+        "critica": false
+      }
+    },
+    {
+      "data": {
+        "source": "E",
+        "target": "F",
+        "critica": true
+      }
+    },
+    {
+      "data": {
+        "source": "E",
+        "target": "H",
+        "critica": false
+      }
+    },
+    {
+      "data": {
+        "source": "F",
+        "target": "J",
+        "critica": true
+      }
+    },
+    {
+      "data": {
+        "source": "J",
+        "target": "K",
+        "critica": false
+      }
+    },
+    {
+      "data": {
+        "source": "J",
+        "target": "L",
+        "critica": true
+      }
+    },
+    {
+      "data": {
+        "source": "L",
+        "target": "B",
+        "critica": true
+      }
+    },
+    {
+      "data": {
+        "source": "K",
+        "target": "B",
+        "critica": false
+      }
+    },
+    {
+      "data": {
+        "source": "D",
+        "target": "G",
+        "critica": false
+      }
+    },
+    {
+      "data": {
+        "source": "G",
+        "target": "H",
+        "critica": false
+      }
+    },
+    {
+      "data": {
+        "source": "H",
+        "target": "M",
+        "critica": false
+      }
+    }
+  ]
+}
