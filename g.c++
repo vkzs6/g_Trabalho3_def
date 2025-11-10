@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <limits>
 #include <tuple>
+#include <fstream> // Necessário para gerar o arquivo DOT
 
 using namespace std;
 
@@ -14,25 +15,21 @@ enum EstadoDFS { NAO_VISITADO, VISITADO, COMPLETO };
 
 // Estrutura para representar cada Atividade (Vértice do Grafo)
 struct Atividade {
-    string id;              // Identificador da Atividade
-    int duracao;            // Duração da Atividade
+    string id;              
+    int duracao;            
 
-    // Tempos de Início e Fim (Cedo)
-    int ES = 0;             // Early Start 
-    int EF = 0;             // Early Finish 
-    
-    // Tempos de Início e Fim (Tarde) - Inicialização com valor máximo
+    // Tempos de Início e Fim (Cedo e Tarde)
+    int ES = 0;             
+    int EF = 0;             
     int LS = numeric_limits<int>::max(); 
     int LF = numeric_limits<int>::max(); 
 
-    // Folga (Slack/Float)
     int folga = 0;
 
-    // Relações de Precedência e Sucessão
+    // Relações
     vector<string> precedentes; 
     vector<string> sucessores;  
     
-    // Campo para o DFS
     EstadoDFS estado = NAO_VISITADO;
 };
 
@@ -41,7 +38,6 @@ struct Atividade {
 // =========================================================
 
 void construirGrafo(map<string, Atividade>& atividades, const vector<tuple<string, int, string>>& dados) {
-    // 1. Criar as atividades com duração e precedentes
     for (const auto& tupla : dados) {
         string id = get<0>(tupla);
         int duracao = get<1>(tupla);
@@ -51,7 +47,6 @@ void construirGrafo(map<string, Atividade>& atividades, const vector<tuple<strin
         stringstream ss(precs_str);
         string prec_id;
 
-        // Processar os precedentes (ex: "A,B")
         while (getline(ss, prec_id, ',')) {
             if (!prec_id.empty() && prec_id != "-") {
                 atividades[id].precedentes.push_back(prec_id);
@@ -59,7 +54,6 @@ void construirGrafo(map<string, Atividade>& atividades, const vector<tuple<strin
         }
     }
 
-    // 2. Definir os sucessores (para facilitar o Backward Pass)
     for (auto const& pair : atividades) {
         const string& id = pair.first;
         for (const string& prec_id : pair.second.precedentes) {
@@ -70,17 +64,16 @@ void construirGrafo(map<string, Atividade>& atividades, const vector<tuple<strin
     }
 }
 
-// Função Recursiva DFS para Ordenação Topológica
+// DFS para Ordenação Topológica e Detecção de Ciclos
 bool dfsTopologicalSort(const string& id, map<string, Atividade>& atividades, vector<string>& ordem_topologica) {
     Atividade& ativ = atividades.at(id);
-    ativ.estado = VISITADO; // Marca como 'VISITADO' (em processamento)
+    ativ.estado = VISITADO; 
 
     for (const string& sucessor_id : ativ.sucessores) {
         if (atividades.count(sucessor_id)) {
             Atividade& sucessor = atividades.at(sucessor_id);
             
             if (sucessor.estado == VISITADO) {
-                // Ciclo detectado!
                 cerr << "ERRO: Ciclo detectado no grafo: " << id << " -> " << sucessor_id << endl;
                 return false; 
             }
@@ -94,7 +87,7 @@ bool dfsTopologicalSort(const string& id, map<string, Atividade>& atividades, ve
     }
 
     ativ.estado = COMPLETO; 
-    ordem_topologica.push_back(id); // Adiciona ao início da lista (Reverse DFS)
+    ordem_topologica.push_back(id); 
     return true; 
 }
 
@@ -102,23 +95,19 @@ bool dfsTopologicalSort(const string& id, map<string, Atividade>& atividades, ve
 bool realizarOrdenacaoTopologica(map<string, Atividade>& atividades, vector<string>& ordem_topologica) {
     ordem_topologica.clear();
     
-    // Resetar o estado de visitação
     for (auto& pair : atividades) {
         pair.second.estado = NAO_VISITADO;
     }
     
-    // Iniciar o DFS a partir de todas as atividades
     for (auto& pair : atividades) {
         if (pair.second.estado == NAO_VISITADO) {
             if (!dfsTopologicalSort(pair.first, atividades, ordem_topologica)) {
-                return false; // Ciclo
+                return false; 
             }
         }
     }
     
-    // Invertemos para obter a ordem correta (Iniciais -> Finais)
     reverse(ordem_topologica.begin(), ordem_topologica.end());
-    
     return true;
 }
 
@@ -126,7 +115,6 @@ bool realizarOrdenacaoTopologica(map<string, Atividade>& atividades, vector<stri
 // FUNÇÕES DE CÁLCULO PERT/CPM
 // =========================================================
 
-// 1. Forward Pass: Calcula Early Start (ES) e Early Finish (EF)
 void forwardPass(map<string, Atividade>& atividades, const vector<string>& ordem_topologica) {
     for (const string& id : ordem_topologica) {
         Atividade& ativ = atividades.at(id);
@@ -134,7 +122,6 @@ void forwardPass(map<string, Atividade>& atividades, const vector<string>& ordem
         if (ativ.precedentes.empty()) {
             ativ.ES = 0;
         } else {
-            // ES = max(EF dos precedentes)
             int max_ef = 0;
             for (const string& prec_id : ativ.precedentes) {
                 if (atividades.count(prec_id)) {
@@ -147,18 +134,14 @@ void forwardPass(map<string, Atividade>& atividades, const vector<string>& ordem
     }
 }
 
-// 2. Backward Pass: Calcula Late Start (LS), Late Finish (LF) e Folga
 void backwardPass(map<string, Atividade>& atividades, const vector<string>& ordem_topologica, int duracao_projeto) {
-    // Itera sobre a ordem topológica de trás para frente
     for (auto it = ordem_topologica.rbegin(); it != ordem_topologica.rend(); ++it) {
         const string& id = *it;
         Atividade& ativ = atividades.at(id);
         
         if (ativ.sucessores.empty()) {
-            // Atividades finais
             ativ.LF = duracao_projeto;
         } else {
-            // LF = min(LS dos sucessores)
             int min_ls = numeric_limits<int>::max();
             for (const string& suc_id : ativ.sucessores) {
                 if (atividades.count(suc_id)) {
@@ -168,19 +151,16 @@ void backwardPass(map<string, Atividade>& atividades, const vector<string>& orde
             ativ.LF = min_ls;
         }
         
-        // Calcula LS e Folga
         ativ.LS = ativ.LF - ativ.duracao;
         ativ.folga = ativ.LS - ativ.ES;
     }
 }
 
-// Função principal de execução do PERT/CPM (Formato C++11/C++14)
-// Usa bool& sucesso para sinalizar se um ciclo foi detectado.
+// Função de execução principal (C++11/C++14)
 vector<string> calcularPERT_CPM_Legacy(map<string, Atividade>& atividades, bool& sucesso) {
     vector<string> ordem_topologica;
     sucesso = true; 
 
-    // 1. Ordenação Topológica com DFS
     if (!realizarOrdenacaoTopologica(atividades, ordem_topologica)) {
         cout << "\nERRO: O cálculo PERT/CPM não pode ser completado devido a um ciclo no projeto." << endl;
         sucesso = false; 
@@ -192,10 +172,8 @@ vector<string> calcularPERT_CPM_Legacy(map<string, Atividade>& atividades, bool&
     }
     cout << endl;
 
-    // 2. Forward Pass
     forwardPass(atividades, ordem_topologica);
 
-    // 3. Determinar a Duração do Projeto
     int duracao_projeto = 0;
     for (auto const& pair : atividades) {
         if (pair.second.sucessores.empty()) {
@@ -204,14 +182,13 @@ vector<string> calcularPERT_CPM_Legacy(map<string, Atividade>& atividades, bool&
     }
     cout << "--- Duração Mínima do Projeto: " << duracao_projeto << endl;
 
-    // 4. Backward Pass
     backwardPass(atividades, ordem_topologica, duracao_projeto);
 
     return ordem_topologica; 
 }
 
 // =========================================================
-// FUNÇÕES DE EXIBIÇÃO
+// FUNÇÕES DE EXIBIÇÃO E GERAÇÃO DOT
 // =========================================================
 
 void exibirResultado(const map<string, Atividade>& atividades, const vector<string>& ordem_topologica) {
@@ -220,7 +197,6 @@ void exibirResultado(const map<string, Atividade>& atividades, const vector<stri
     cout << "| Ativ | Dura | ES (Inicio Cedo) | EF (Fim Cedo) | LS (Inicio Tarde) | LF (Fim Tarde) | Folga | Critica |" << endl;
     cout << "--------------------------------------------------------------------------------" << endl;
 
-    // Exibe a tabela na ordem topológica (para garantir a ordem do fluxo)
     for (const string& id : ordem_topologica) {
         const Atividade& ativ = atividades.at(id);
         string critico = (ativ.folga == 0) ? "SIM" : "NAO";
@@ -230,7 +206,6 @@ void exibirResultado(const map<string, Atividade>& atividades, const vector<stri
     }
     cout << "--------------------------------------------------------------------------------" << endl;
 
-    // Exibir Caminho Crítico na Ordem Topológica garantida
     cout << "\n## Caminho Critico\n";
     cout << "Sequencia Critica: ";
     bool primeiro = true;
@@ -247,13 +222,59 @@ void exibirResultado(const map<string, Atividade>& atividades, const vector<stri
     cout << endl;
 }
 
+void gerarArquivoDOT(const map<string, Atividade>& atividades, const vector<string>& ordem_topologica, const string& nome_arquivo) {
+    ofstream arquivo(nome_arquivo);
+    if (!arquivo.is_open()) {
+        cerr << "Erro ao abrir o arquivo DOT para escrita." << endl;
+        return;
+    }
+
+    arquivo << "digraph PERT_CPM {" << endl;
+    arquivo << "  rankdir=LR;" << endl; 
+    arquivo << "  overlap=false;" << endl; 
+    arquivo << "  node [shape=record, fontname=\"Arial\"];" << endl; 
+
+    string cor_critica_fundo = "mistyrose";
+    string cor_normal_fundo = "lightblue";
+    
+    // 1. Definição dos nós (Atividades)
+    for (const string& id : ordem_topologica) {
+        const Atividade& ativ = atividades.at(id);
+        string node_color = (ativ.folga == 0) ? cor_critica_fundo : cor_normal_fundo;
+        string font_color = (ativ.folga == 0) ? "red" : "black";
+
+        // Formato: { ID | DURA: X | { ES: X | EF: X } | { LS: X | LF: X } | FOLGA: X }
+        arquivo << "  " << ativ.id << " [fillcolor=\"" << node_color << "\", style=filled, fontcolor=\"" << font_color << "\", label=\"{"
+                << ativ.id << " | DURA: " << ativ.duracao << " | { ES: " << ativ.ES << " | EF: " << ativ.EF << " } | { LS: " << ativ.LS 
+                << " | LF: " << ativ.LF << " } | FOLGA: " << ativ.folga 
+                << "}\"];" << endl;
+    }
+
+    // 2. Definição das arestas (Precedências)
+    for (const string& id : ordem_topologica) {
+        const Atividade& ativ = atividades.at(id);
+        for (const string& sucessor_id : ativ.sucessores) {
+            // Aresta crítica se ambos os nós são críticos E há continuidade temporal
+            bool is_critical_edge = (ativ.folga == 0 && atividades.at(sucessor_id).folga == 0 && ativ.EF == atividades.at(sucessor_id).ES);
+            
+            string edge_color = is_critical_edge ? "red" : "gray50";
+            string edge_style = is_critical_edge ? "bold" : "solid";
+
+            arquivo << "  " << ativ.id << " -> " << sucessor_id << " [color=\"" << edge_color << "\", style=" << edge_style << ", penwidth=" << (is_critical_edge ? 2.0 : 1.0) << "];" << endl;
+        }
+    }
+
+    arquivo << "}" << endl;
+    arquivo.close();
+    cout << "\nArquivo DOT '" << nome_arquivo << "' gerado com sucesso!" << endl;
+}
+
 // =========================================================
 // FUNÇÃO MAIN
 // =========================================================
 
 int main() {
     // Tabela de Atividades, Duração e Precedentes:
-    // Formato: {ID, Duração, Precedentes_IDs (separados por vírgula, use "-" se nenhum)}
     vector<tuple<string, int, string>> dados_projeto = {
         {"A", 2, "-"},
         {"B", 6, "K,L"},
@@ -264,7 +285,7 @@ int main() {
         {"G", 7, "D"},
         {"H", 9, "E,G"},
         {"I", 7, "C"},
-        {"J", 8, "F, I"},
+        {"J", 8, "F,I"}, 
         {"K", 4, "J"},
         {"L", 5, "J"},
         {"M", 2, "H"},
@@ -272,6 +293,7 @@ int main() {
     };
 
     map<string, Atividade> atividades;
+    string nome_arquivo_dot = "pert_cpm_grafo.dot";
 
     // 1. Construir o Grafo
     construirGrafo(atividades, dados_projeto);
@@ -282,13 +304,12 @@ int main() {
     vector<string> ordem_topologica = calcularPERT_CPM_Legacy(atividades, calculo_ok);
 
     if (calculo_ok) {
-        // 3. Exibir Resultados
+        // 3. Exibir Resultados (Tabela)
         exibirResultado(atividades, ordem_topologica);
+        
+        // 4. Gerar o arquivo DOT (para o display gráfico)
+        gerarArquivoDOT(atividades, ordem_topologica, nome_arquivo_dot);
     }
-
-    // Para compilar com g++ 6.3, use o comando:
-    // g++ -std=c++11 nome_do_arquivo.cpp -o programa
-    // (Ou -std=c++14)
 
     return 0;
 }

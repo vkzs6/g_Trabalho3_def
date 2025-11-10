@@ -1,0 +1,35 @@
+digraph PERT_CPM {
+  rankdir=LR;
+  overlap=false;
+  node [shape=record, fontname="Arial"];
+  A [fillcolor="mistyrose", style=filled, fontcolor="red", label="{A | DURA: 2 | { ES: 0 | EF: 2 } | { LS: 0 | LF: 2 } | FOLGA: 0}"];
+  N [fillcolor="mistyrose", style=filled, fontcolor="red", label="{N | DURA: 4 | { ES: 2 | EF: 6 } | { LS: 2 | LF: 6 } | FOLGA: 0}"];
+  C [fillcolor="mistyrose", style=filled, fontcolor="red", label="{C | DURA: 10 | { ES: 6 | EF: 16 } | { LS: 6 | LF: 16 } | FOLGA: 0}"];
+  I [fillcolor="lightblue", style=filled, fontcolor="black", label="{I | DURA: 7 | { ES: 16 | EF: 23 } | { LS: 18 | LF: 25 } | FOLGA: 2}"];
+  E [fillcolor="mistyrose", style=filled, fontcolor="red", label="{E | DURA: 4 | { ES: 16 | EF: 20 } | { LS: 16 | LF: 20 } | FOLGA: 0}"];
+  F [fillcolor="mistyrose", style=filled, fontcolor="red", label="{F | DURA: 5 | { ES: 20 | EF: 25 } | { LS: 20 | LF: 25 } | FOLGA: 0}"];
+  J [fillcolor="mistyrose", style=filled, fontcolor="red", label="{J | DURA: 8 | { ES: 25 | EF: 33 } | { LS: 25 | LF: 33 } | FOLGA: 0}"];
+  L [fillcolor="mistyrose", style=filled, fontcolor="red", label="{L | DURA: 5 | { ES: 33 | EF: 38 } | { LS: 33 | LF: 38 } | FOLGA: 0}"];
+  K [fillcolor="lightblue", style=filled, fontcolor="black", label="{K | DURA: 4 | { ES: 33 | EF: 37 } | { LS: 34 | LF: 38 } | FOLGA: 1}"];
+  B [fillcolor="mistyrose", style=filled, fontcolor="red", label="{B | DURA: 6 | { ES: 38 | EF: 44 } | { LS: 38 | LF: 44 } | FOLGA: 0}"];
+  D [fillcolor="lightblue", style=filled, fontcolor="black", label="{D | DURA: 6 | { ES: 16 | EF: 22 } | { LS: 20 | LF: 26 } | FOLGA: 4}"];
+  G [fillcolor="lightblue", style=filled, fontcolor="black", label="{G | DURA: 7 | { ES: 22 | EF: 29 } | { LS: 26 | LF: 33 } | FOLGA: 4}"];
+  H [fillcolor="lightblue", style=filled, fontcolor="black", label="{H | DURA: 9 | { ES: 29 | EF: 38 } | { LS: 33 | LF: 42 } | FOLGA: 4}"];
+  M [fillcolor="lightblue", style=filled, fontcolor="black", label="{M | DURA: 2 | { ES: 38 | EF: 40 } | { LS: 42 | LF: 44 } | FOLGA: 4}"];
+  A -> N [color="red", style=bold, penwidth=2];
+  N -> C [color="red", style=bold, penwidth=2];
+  C -> D [color="gray50", style=solid, penwidth=1];
+  C -> E [color="red", style=bold, penwidth=2];
+  C -> I [color="gray50", style=solid, penwidth=1];
+  I -> J [color="gray50", style=solid, penwidth=1];
+  E -> F [color="red", style=bold, penwidth=2];
+  E -> H [color="gray50", style=solid, penwidth=1];
+  F -> J [color="red", style=bold, penwidth=2];
+  J -> K [color="gray50", style=solid, penwidth=1];
+  J -> L [color="red", style=bold, penwidth=2];
+  L -> B [color="red", style=bold, penwidth=2];
+  K -> B [color="gray50", style=solid, penwidth=1];
+  D -> G [color="gray50", style=solid, penwidth=1];
+  G -> H [color="gray50", style=solid, penwidth=1];
+  H -> M [color="gray50", style=solid, penwidth=1];
+}
