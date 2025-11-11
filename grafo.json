@@ -4,6 +4,19 @@
   "nodes": [
     {
       "data": {
+        "id": "Z",
+        "label": "Z",
+        "duracao": 3,
+        "es": 0,
+        "ef": 3,
+        "ls": 3,
+        "lf": 6,
+        "folga": 3,
+        "critica": "false"
+      }
+    },
+    {
+      "data": {
         "id": "A",
         "label": "A",
         "duracao": 2,
@@ -12,7 +25,7 @@
         "ls": 0,
         "lf": 2,
         "folga": 0,
-        "critica": true
+        "critica": "true"
       }
     },
     {
@@ -25,7 +38,7 @@
         "ls": 2,
         "lf": 6,
         "folga": 0,
-        "critica": true
+        "critica": "true"
       }
     },
     {
@@ -38,7 +51,7 @@
         "ls": 6,
         "lf": 16,
         "folga": 0,
-        "critica": true
+        "critica": "true"
       }
     },
     {
@@ -51,7 +64,7 @@
         "ls": 18,
         "lf": 25,
         "folga": 2,
-        "critica": false
+        "critica": "false"
       }
     },
     {
@@ -64,7 +77,7 @@
         "ls": 16,
         "lf": 20,
         "folga": 0,
-        "critica": true
+        "critica": "true"
       }
     },
     {
@@ -77,7 +90,7 @@
         "ls": 20,
         "lf": 25,
         "folga": 0,
-        "critica": true
+        "critica": "true"
       }
     },
     {
@@ -90,7 +103,7 @@
         "ls": 25,
         "lf": 33,
         "folga": 0,
-        "critica": true
+        "critica": "true"
       }
     },
     {
@@ -103,7 +116,7 @@
         "ls": 33,
         "lf": 38,
         "folga": 0,
-        "critica": true
+        "critica": "true"
       }
     },
     {
@@ -116,7 +129,7 @@
         "ls": 34,
         "lf": 38,
         "folga": 1,
-        "critica": false
+        "critica": "false"
       }
     },
     {
@@ -129,7 +142,7 @@
         "ls": 38,
         "lf": 44,
         "folga": 0,
-        "critica": true
+        "critica": "true"
       }
     },
     {
@@ -142,7 +155,7 @@
         "ls": 20,
         "lf": 26,
         "folga": 4,
-        "critica": false
+        "critica": "false"
       }
     },
     {
@@ -155,7 +168,7 @@
         "ls": 26,
         "lf": 33,
         "folga": 4,
-        "critica": false
+        "critica": "false"
       }
     },
     {
@@ -168,7 +181,7 @@
         "ls": 33,
         "lf": 42,
         "folga": 4,
-        "critica": false
+        "critica": "false"
       }
     },
     {
@@ -181,121 +194,128 @@
         "ls": 42,
         "lf": 44,
         "folga": 4,
-        "critica": false
+        "critica": "false"
       }
     }
   ],
   "edges": [
     {
       "data": {
+        "source": "Z",
+        "target": "C",
+        "critica": "false"
+      }
+    },
+    {
+      "data": {
         "source": "A",
         "target": "N",
-        "critica": true
+        "critica": "true"
       }
     },
     {
       "data": {
         "source": "N",
         "target": "C",
-        "critica": true
+        "critica": "true"
       }
     },
     {
       "data": {
         "source": "C",
         "target": "D",
-        "critica": false
+        "critica": "false"
       }
     },
     {
       "data": {
         "source": "C",
         "target": "E",
-        "critica": true
+        "critica": "true"
       }
     },
     {
       "data": {
         "source": "C",
         "target": "I",
-        "critica": false
+        "critica": "false"
       }
     },
     {
       "data": {
         "source": "I",
         "target": "J",
-        "critica": false
+        "critica": "false"
       }
     },
     {
       "data": {
         "source": "E",
         "target": "F",
-        "critica": true
+        "critica": "true"
       }
     },
     {
       "data": {
         "source": "E",
         "target": "H",
-        "critica": false
+        "critica": "false"
       }
     },
     {
       "data": {
         "source": "F",
         "target": "J",
-        "critica": true
+        "critica": "true"
       }
     },
     {
       "data": {
         "source": "J",
         "target": "K",
-        "critica": false
+        "critica": "false"
       }
     },
     {
       "data": {
         "source": "J",
         "target": "L",
-        "critica": true
+        "critica": "true"
       }
     },
     {
       "data": {
         "source": "L",
         "target": "B",
-        "critica": true
+        "critica": "true"
       }
     },
     {
       "data": {
         "source": "K",
         "target": "B",
-        "critica": false
+        "critica": "false"
       }
     },
     {
       "data": {
         "source": "D",
         "target": "G",
-        "critica": false
+        "critica": "false"
       }
     },
     {
       "data": {
         "source": "G",
         "target": "H",
-        "critica": false
+        "critica": "false"
       }
     },
     {
       "data": {
         "source": "H",
         "target": "M",
-        "critica": false
+        "critica": "false"
       }
     }
   ]

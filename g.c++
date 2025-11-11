@@ -10,7 +10,6 @@
 
 using namespace std;
 
-// Estados para a Busca em Profundidade (DFS)
 enum EstadoDFS { NAO_VISITADO, VISITADO, COMPLETO };
 
 // Estrutura para representar cada Atividade (Vértice do Grafo)
@@ -32,10 +31,6 @@ struct Atividade {
     
     EstadoDFS estado = NAO_VISITADO;
 };
-
-// =========================================================
-// FUNÇÕES DE CONSTRUÇÃO E ORDENAÇÃO TOPOLÓGICA (DFS)
-// =========================================================
 
 void construirGrafo(map<string, Atividade>& atividades, const vector<tuple<string, int, string>>& dados) {
     for (const auto& tupla : dados) {
@@ -64,7 +59,7 @@ void construirGrafo(map<string, Atividade>& atividades, const vector<tuple<strin
     }
 }
 
-// DFS para Ordenação Topológica e Detecção de Ciclos
+// DFS para Ordenação e Detecção de Ciclos
 bool dfsTopologicalSort(const string& id, map<string, Atividade>& atividades, vector<string>& ordem_topologica) {
     Atividade& ativ = atividades.at(id);
     ativ.estado = VISITADO; 
@@ -91,7 +86,7 @@ bool dfsTopologicalSort(const string& id, map<string, Atividade>& atividades, ve
     return true; 
 }
 
-// Função Principal de Ordenação Topológica
+// Função Principal de Ordenação
 bool realizarOrdenacaoTopologica(map<string, Atividade>& atividades, vector<string>& ordem_topologica) {
     ordem_topologica.clear();
     
@@ -110,10 +105,6 @@ bool realizarOrdenacaoTopologica(map<string, Atividade>& atividades, vector<stri
     reverse(ordem_topologica.begin(), ordem_topologica.end());
     return true;
 }
-
-// =========================================================
-// FUNÇÕES DE CÁLCULO PERT/CPM
-// =========================================================
 
 void forwardPass(map<string, Atividade>& atividades, const vector<string>& ordem_topologica) {
     for (const string& id : ordem_topologica) {
@@ -156,8 +147,7 @@ void backwardPass(map<string, Atividade>& atividades, const vector<string>& orde
     }
 }
 
-// Função de execução principal (C++11/C++14)
-vector<string> calcularPERT_CPM_Legacy(map<string, Atividade>& atividades, bool& sucesso) {
+vector<string> calcularPERT_CPM(map<string, Atividade>& atividades, bool& sucesso) {
     vector<string> ordem_topologica;
     sucesso = true; 
 
@@ -186,10 +176,6 @@ vector<string> calcularPERT_CPM_Legacy(map<string, Atividade>& atividades, bool&
 
     return ordem_topologica; 
 }
-
-// =========================================================
-// FUNÇÕES DE EXIBIÇÃO E GERAÇÃO DOT
-// =========================================================
 
 void exibirResultado(const map<string, Atividade>& atividades, const vector<string>& ordem_topologica) {
     cout << "\n## Resultados do PERT/CPM\n";
@@ -237,7 +223,7 @@ void gerarArquivoDOT(const map<string, Atividade>& atividades, const vector<stri
     string cor_critica_fundo = "mistyrose";
     string cor_normal_fundo = "lightblue";
     
-    // 1. Definição dos nós (Atividades)
+    // Definição dos vértices (Atividades)
     for (const string& id : ordem_topologica) {
         const Atividade& ativ = atividades.at(id);
         string node_color = (ativ.folga == 0) ? cor_critica_fundo : cor_normal_fundo;
@@ -250,11 +236,11 @@ void gerarArquivoDOT(const map<string, Atividade>& atividades, const vector<stri
                 << "}\"];" << endl;
     }
 
-    // 2. Definição das arestas (Precedências)
+    // Definição das arestas (Precedências)
     for (const string& id : ordem_topologica) {
         const Atividade& ativ = atividades.at(id);
         for (const string& sucessor_id : ativ.sucessores) {
-            // Aresta crítica se ambos os nós são críticos E há continuidade temporal
+            // Aresta crítica se ambos os vértices são críticos E há continuidade temporal
             bool is_critical_edge = (ativ.folga == 0 && atividades.at(sucessor_id).folga == 0 && ativ.EF == atividades.at(sucessor_id).ES);
             
             string edge_color = is_critical_edge ? "red" : "gray50";
@@ -292,7 +278,7 @@ void gerarArquivoJSON(const map<string, Atividade>& atividades, const vector<str
     
     arquivo << "  \"nodes\": [" << endl;
 
-    // --- 1. Geração dos Nós (Nodes) ---
+    // Geração dos vértices (Nodes)
     for (size_t i = 0; i < ordem_topologica.size(); ++i) {
         const string& id = ordem_topologica[i];
         const Atividade& ativ = atividades.at(id);
@@ -307,7 +293,7 @@ void gerarArquivoJSON(const map<string, Atividade>& atividades, const vector<str
         arquivo << "        \"ls\": " << ativ.LS << "," << endl;
         arquivo << "        \"lf\": " << ativ.LF << "," << endl;
         arquivo << "        \"folga\": " << ativ.folga << "," << endl;
-        arquivo << "        \"critica\": " << (ativ.folga == 0 ? "true" : "false") << "" << endl;
+        arquivo << "        \"critica\": \"" << (ativ.folga == 0 ? "true" : "false") << "\"" << endl; // O valor true/false precisam ser concatenados com \" "true" \" para poderem ser escritos corretamente no JSON, e lidos pelo html
         arquivo << "      }" << endl;
         arquivo << "    }";
         if (i < ordem_topologica.size() - 1) {
@@ -317,7 +303,7 @@ void gerarArquivoJSON(const map<string, Atividade>& atividades, const vector<str
     }
     arquivo << "  ]," << endl;
 
-    // --- 2. Geração das Arestas (Edges) ---
+    // Geração das Arestas (Edges)
     arquivo << "  \"edges\": [" << endl;
     bool primeira_aresta = true;
 
@@ -335,7 +321,7 @@ void gerarArquivoJSON(const map<string, Atividade>& atividades, const vector<str
             arquivo << "      \"data\": {" << endl;
             arquivo << "        \"source\": \"" << ativ.id << "\"," << endl;
             arquivo << "        \"target\": \"" << sucessor_id << "\"," << endl;
-            arquivo << "        \"critica\": " << (is_critical_edge ? "true" : "false") << "" << endl;
+            arquivo << "        \"critica\": \"" << (is_critical_edge ? "true" : "false") << "\"" << endl; // O valor true/false precisam ser concatenados com \" "true" \" para poderem ser escritos corretamente no JSON, e lidos pelo html
             arquivo << "      }" << endl;
             arquivo << "    }";
 
@@ -354,13 +340,13 @@ void gerarArquivoJSON(const map<string, Atividade>& atividades, const vector<str
 }
 
 
-// FUNÇÃO MAIN (Adaptada para gerar o arquivo JSON)
 int main() {
-    // Tabela de Atividades, Duração e Precedentes:
+    // {"Nome", duração, precedentes("-" se não houver precedente, "A,B"Separar vários precedentes com vírgula)}:
     vector<tuple<string, int, string>> dados_projeto = {
+        {"Z", 3, "-"},
         {"A", 2, "-"},
         {"B", 6, "K,L"},
-        {"C", 10, "N"},
+        {"C", 10, "N,Z"},
         {"D", 6, "C"},
         {"E", 4, "C"},
         {"F", 5, "E"},
@@ -375,20 +361,18 @@ int main() {
     };
 
     map<string, Atividade> atividades;
-    string nome_arquivo_json = "grafo.json"; // Nome do arquivo conforme o requisito
+    string nome_arquivo_json = "grafo.json"; // Nome do arquivo 
 
     construirGrafo(atividades, dados_projeto);
 
     bool calculo_ok;
-    vector<string> ordem_topologica = calcularPERT_CPM_Legacy(atividades, calculo_ok);
+    vector<string> ordem_topologica = calcularPERT_CPM(atividades, calculo_ok);
 
     if (calculo_ok) {
         exibirResultado(atividades, ordem_topologica);
         
-        // Geração do arquivo JSON para o display gráfico
         gerarArquivoJSON(atividades, ordem_topologica, nome_arquivo_json);
     }
 
     return 0;
 }
-// [Fim do código C++]
