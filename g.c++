@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <limits>
 #include <tuple>
-#include <fstream> // Necessário para gerar o arquivo DOT
+#include <fstream>
 
 using namespace std;
 
@@ -206,53 +206,6 @@ void exibirResultado(const map<string, Atividade>& atividades, const vector<stri
         }
     }
     cout << endl;
-}
-
-void gerarArquivoDOT(const map<string, Atividade>& atividades, const vector<string>& ordem_topologica, const string& nome_arquivo) {
-    ofstream arquivo(nome_arquivo);
-    if (!arquivo.is_open()) {
-        cerr << "Erro ao abrir o arquivo DOT para escrita." << endl;
-        return;
-    }
-
-    arquivo << "digraph PERT_CPM {" << endl;
-    arquivo << "  rankdir=LR;" << endl; 
-    arquivo << "  overlap=false;" << endl; 
-    arquivo << "  node [shape=record, fontname=\"Arial\"];" << endl; 
-
-    string cor_critica_fundo = "mistyrose";
-    string cor_normal_fundo = "lightblue";
-    
-    // Definição dos vértices (Atividades)
-    for (const string& id : ordem_topologica) {
-        const Atividade& ativ = atividades.at(id);
-        string node_color = (ativ.folga == 0) ? cor_critica_fundo : cor_normal_fundo;
-        string font_color = (ativ.folga == 0) ? "red" : "black";
-
-        // Formato: { ID | DURA: X | { ES: X | EF: X } | { LS: X | LF: X } | FOLGA: X }
-        arquivo << "  " << ativ.id << " [fillcolor=\"" << node_color << "\", style=filled, fontcolor=\"" << font_color << "\", label=\"{"
-                << ativ.id << " | DURA: " << ativ.duracao << " | { ES: " << ativ.ES << " | EF: " << ativ.EF << " } | { LS: " << ativ.LS 
-                << " | LF: " << ativ.LF << " } | FOLGA: " << ativ.folga 
-                << "}\"];" << endl;
-    }
-
-    // Definição das arestas (Precedências)
-    for (const string& id : ordem_topologica) {
-        const Atividade& ativ = atividades.at(id);
-        for (const string& sucessor_id : ativ.sucessores) {
-            // Aresta crítica se ambos os vértices são críticos E há continuidade temporal
-            bool is_critical_edge = (ativ.folga == 0 && atividades.at(sucessor_id).folga == 0 && ativ.EF == atividades.at(sucessor_id).ES);
-            
-            string edge_color = is_critical_edge ? "red" : "gray50";
-            string edge_style = is_critical_edge ? "bold" : "solid";
-
-            arquivo << "  " << ativ.id << " -> " << sucessor_id << " [color=\"" << edge_color << "\", style=" << edge_style << ", penwidth=" << (is_critical_edge ? 2.0 : 1.0) << "];" << endl;
-        }
-    }
-
-    arquivo << "}" << endl;
-    arquivo.close();
-    cout << "\nArquivo DOT '" << nome_arquivo << "' gerado com sucesso!" << endl;
 }
 
 void gerarArquivoJSON(const map<string, Atividade>& atividades, const vector<string>& ordem_topologica, const string& nome_arquivo) {
